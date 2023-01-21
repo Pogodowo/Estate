@@ -74,7 +74,8 @@ def loadDriver(url):
     return driver
 
 def home(request):
-    url = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/legionowo?distanceRadius=0&page=1&limit=36&market=ALL&locations=%5Bcities_6-724%5D&priceMax=350000&by=DEFAULT&direction=DESC&viewType=listing'
+    urls = ['https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/legionowo?distanceRadius=0&page=1&limit=36&market=ALL&locations=%5Bcities_6-724%5D&priceMax=350000&by=DEFAULT&direction=DESC&viewType=listing',
+            'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/pruszkow?distanceRadius=0&page=1&limit=72&market=ALL&locations=%5Bcities_6-840%5D&priceMax=350000&by=PRICE&direction=ASC&viewType=listing&lang=pl&searchingCriteria=sprzedaz&searchingCriteria=mieszkanie&searchingCriteria=legionowo',]
     ogl = []
     def oto_dom_scraper(url):
         if url[:21]=='https://www.otodom.pl':
@@ -83,7 +84,7 @@ def home(request):
             last_height = driver.execute_script("return document.body.scrollHeight")
             itemTargetCount = 100
 
-            while itemTargetCount > 50:
+            while itemTargetCount > 10:
                 driver.execute_script("window.scroll(0, document.body.scrollHeight);")
                 time.sleep(1)
 
@@ -98,10 +99,11 @@ def home(request):
             lista_ogl = []
             for i in ogloszenia:
                 lista_ogl += i.find_elements(By.XPATH, './li[@data-cy="listing-item"]')
-
-
+            count=0
+            ogl.append(str(len(lista_ogl)))
             for i in lista_ogl:
-                ogl.append(str(len(lista_ogl)))
+                count+=1
+                ogl.append(str(count))
                 try:
                     tytul = i.find_element(By.XPATH, "./a/article/div")
                     ogl.append(tytul.text)
@@ -149,79 +151,12 @@ def home(request):
                                                  data_zakonczenia=None)
             return ogl
         return False
-    oto_dom_scraper(url)
-    # driver=loadDriver(url)
-    # ###################################################
-    # last_height = driver.execute_script("return document.body.scrollHeight")
-    # itemTargetCount = 100
-    #
-    # while itemTargetCount >50:
-    #     driver.execute_script("window.scroll(0, document.body.scrollHeight);")
-    #     time.sleep(1)
-    #
-    #     new_height = driver.execute_script("return document.body.scrollHeight")
-    #     if new_height == last_height:
-    #         break
-    #     last_height = new_height
-    #
-    # ##########################################################
-    # ogloszenia = driver.find_elements(By.XPATH, '//ul')
-    #
-    # lista_ogl=[]
-    # for i in ogloszenia:
-    #     lista_ogl += i.find_elements(By.XPATH, './li[@data-cy="listing-item"]')
-    #
-    # ogl=[]
-    # for i in lista_ogl:
-    #     ogl.append(str(len(lista_ogl)))
-    #     try:
-    #         tytul=i.find_element( By.XPATH, "./a/article/div")
-    #         ogl.append(tytul.text)
-    #     except:
-    #         tytul='nie podano'
-    #         ogl.append(tytul)
-    #     try:
-    #         url_link=i.find_element( By.XPATH, "./a")
-    #         #print('url_link', url_link.get_attribute('href').encode("utf-8"))
-    #     except:
-    #         url_link='nie podano'
-    #     try:
-    #         lokalizacja = i.find_element(By.XPATH, "./a/article/p")
-    #     except:
-    #         lokalizacja='nie podano'
-    #
-    #     try:
-    #         cena=i.find_element( By.XPATH, "./a/article/div[2]/span[1]")
-    #     except:
-    #         cena='nie podano'
-    #
-    #     try:
-    #         cena_za_metr=i.find_element( By.XPATH, "./a/article/div[2]/span[2]")
-    #     except:
-    #         cena_za_metr='nie podano'
-    #
-    #     try:
-    #         liczba_pokoi = i.find_element(By.XPATH,"./a/article/div[2]/span[3]")
-    #     except:
-    #         liczba_pokoi='nie podano'
-    #     try:
-    #         powierzchnia = i.find_element(By.XPATH,"./a/article/div[2]/span[4]")
-    #     except:
-    #         powierzchnia='nie podano'
-    #     print('baza', baza_ogloszen.objects.filter(tytul=tytul.text).exists())
-    #     if baza_ogloszen.objects.filter(tytul=tytul.text).exists():
-    #         print('baza',baza_ogloszen.objects.filter(tytul=tytul).exists())
-    #         pass
-    #     else:
-    #         baza_ogloszen.objects.create(tytul=tytul.text,url_link=url_link.get_attribute("href"),
-    #                                      lokalizacja=lokalizacja.text,powierzchnia=powierzchnia.text,cena=cena.text,
-    #                                      cena_za_metr=cena_za_metr.text,liczba_pokoi=liczba_pokoi.text,
-    #                                      data_wystawienia=datetime.datetime.now(tz=timezone.utc),data_zakonczenia=None)
-        #print('powierzchnia', powierzchnia.get_attribute('innerHTML').encode("utf-8"))
-    # for i in lista_ogl:
-    #
-    #    print('kolejny html',i.get_attribute('innerHTML').encode("utf-8"))
+    for url in urls:
+        oto_dom_scraper(url)
+
+
     for i in baza_ogloszen.objects.all():
+
         if i.tytul in ogl:
             pass
         else:

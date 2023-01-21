@@ -1,0 +1,5 @@
+
+rec_calc/
+_pycache_
+*.sqlite3
+.env
